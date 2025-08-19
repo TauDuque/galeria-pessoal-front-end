@@ -1,13 +1,87 @@
-body {
-  margin: 0;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
-    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
-    sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap");
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground font-sans antialiased;
+    background-image: radial-gradient(
+      ellipse at top,
+      rgba(139, 92, 246, 0.1) 0%,
+      transparent 50%
+    );
+  }
+
+  html {
+    @apply scroll-smooth;
+  }
 }
 
-code {
-  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
-    monospace;
+@layer components {
+  /* Botões estilo Rocketseat */
+  .btn-primary {
+    @apply bg-gradient-primary text-white font-semibold py-3 px-6 rounded-lg 
+           transition-all duration-300 hover:shadow-glow hover:scale-105 
+           focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 focus:ring-offset-background;
+  }
+
+  .btn-secondary {
+    @apply bg-card text-foreground border border-border font-medium py-3 px-6 rounded-lg 
+           transition-all duration-300 hover:bg-muted hover:border-primary-500
+           focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 focus:ring-offset-background;
+  }
+
+  .btn-ghost {
+    @apply text-muted-foreground hover:text-foreground hover:bg-muted 
+           font-medium py-2 px-4 rounded-lg transition-all duration-200;
+  }
+
+  /* Cards estilo Rocketseat */
+  .card {
+    @apply bg-card border border-border rounded-xl shadow-sm 
+           backdrop-blur-sm bg-opacity-80 overflow-hidden;
+  }
+
+  .card-gradient {
+    @apply bg-gradient-card border border-border rounded-xl shadow-sm 
+           backdrop-blur-sm overflow-hidden;
+  }
+
+  /* Inputs estilo Rocketseat */
+  .input {
+    @apply bg-input border border-border text-foreground placeholder:text-muted-foreground 
+           rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-primary-500 
+           focus:border-transparent transition-all duration-200;
+  }
+
+  /* Efeitos de glassmorphism */
+  .glass {
+    @apply bg-white bg-opacity-10 backdrop-blur-md border border-white border-opacity-20;
+  }
+
+  /* Texto com gradiente */
+  .text-gradient {
+    @apply bg-gradient-primary bg-clip-text text-transparent;
+  }
+
+  /* Container principal */
+  .container-main {
+    @apply max-w-7xl mx-auto px-4 sm:px-6 lg:px-8;
+  }
+}
+
+@layer utilities {
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
 }
