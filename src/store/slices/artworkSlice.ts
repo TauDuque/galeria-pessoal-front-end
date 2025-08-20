@@ -107,7 +107,7 @@ const artworkSlice = createSlice({
       // Delete Artwork
       .addCase(deleteArtwork.fulfilled, (state, action) => {
         state.artworks = state.artworks.filter(
-          (artwork) => artwork.id !== action.payload
+          (artwork) => String(artwork.id) !== action.payload
         );
       });
   },

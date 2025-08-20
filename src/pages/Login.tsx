@@ -56,9 +56,10 @@ const Login: React.FC = () => {
 
     if (!formData.password) {
       errors.password = "Senha é obrigatória";
-    } else if (formData.password.length < 6) {
-      errors.password = "Senha deve ter pelo menos 6 caracteres";
     }
+    // else if (formData.password.length < 6) {
+    //   errors.password = "Senha deve ter pelo menos 6 caracteres";
+    // }
 
     setValidationErrors(errors);
     return Object.keys(errors).length === 0;

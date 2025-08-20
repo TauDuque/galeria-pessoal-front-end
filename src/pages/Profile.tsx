@@ -25,7 +25,7 @@ const Profile: React.FC = () => {
 
   // Filtrar apenas as obras do usuário logado
   const userArtworks = artworks.filter(
-    (artwork) => artwork.userId === user?.id
+    (artwork) => String(artwork.userId) === String(user?.id)
   );
 
   useEffect(() => {

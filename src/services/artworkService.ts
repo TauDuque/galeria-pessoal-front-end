@@ -13,15 +13,15 @@ export const artworkService = {
     page: number = 1,
     limit: number = 12
   ): Promise<ArtworksResponse> {
-    const response = await api.get<ApiResponse<ArtworksResponse>>(
+    const response = await api.get<ArtworksResponse>(
       `/api/artworks?page=${page}&limit=${limit}`
     );
-    return response.data.data;
+    return response.data;
   },
 
   async getArtworkById(id: string): Promise<Artwork> {
-    const response = await api.get<ApiResponse<Artwork>>(`/api/artworks/${id}`);
-    return response.data.data;
+    const response = await api.get<Artwork>(`/api/artworks/${id}`);
+    return response.data;
   },
 
   async uploadArtwork(artworkData: UploadArtworkData): Promise<Artwork> {
@@ -32,16 +32,12 @@ export const artworkService = {
     }
     formData.append("image", artworkData.image);
 
-    const response = await api.post<ApiResponse<Artwork>>(
-      "/api/artworks/upload",
-      formData,
-      {
-        headers: {
-          "Content-Type": "multipart/form-data",
-        },
-      }
-    );
-    return response.data.data;
+    const response = await api.post<Artwork>("/api/artworks/upload", formData, {
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
+    });
+    return response.data;
   },
 
   async deleteArtwork(id: string): Promise<void> {
@@ -52,10 +48,7 @@ export const artworkService = {
     id: string,
     data: Partial<UploadArtworkData>
   ): Promise<Artwork> {
-    const response = await api.put<ApiResponse<Artwork>>(
-      `/api/artworks/${id}`,
-      data
-    );
-    return response.data.data;
+    const response = await api.put<Artwork>(`/api/artworks/${id}`, data);
+    return response.data;
   },
 };

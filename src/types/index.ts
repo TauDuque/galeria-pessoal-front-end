@@ -1,6 +1,6 @@
 // User Types
 export interface User {
-  id: string;
+  id: string | number; // Aceitar tanto string quanto number
   name: string;
   email: string;
   createdAt: string;
@@ -17,11 +17,11 @@ export interface AuthState {
 
 // Artwork Types
 export interface Artwork {
-  id: string;
+  id: string | number; // Aceitar tanto string quanto number
   title: string;
   description?: string;
   imageUrl: string;
-  userId: string;
+  userId: string | number; // Aceitar tanto string quanto number
   user?: User;
   createdAt: string;
   updatedAt: string;

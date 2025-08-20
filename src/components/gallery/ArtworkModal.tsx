@@ -59,7 +59,7 @@ const ArtworkModal: React.FC<ArtworkModalProps> = ({ artworkId, onClose }) => {
 
     setIsDeleting(true);
     try {
-      await dispatch(deleteArtwork(artwork.id)).unwrap();
+      await dispatch(deleteArtwork(String(artwork.id))).unwrap();
       dispatch(
         addNotification({
           type: "success",
@@ -112,7 +112,7 @@ const ArtworkModal: React.FC<ArtworkModalProps> = ({ artworkId, onClose }) => {
     });
   };
 
-  const isOwner = user && artwork && user.id === artwork.userId;
+  const isOwner = user && artwork && String(user.id) === String(artwork.userId);
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">

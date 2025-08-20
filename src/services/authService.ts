@@ -8,24 +8,24 @@ interface AuthResponse {
 
 export const authService = {
   async login(credentials: LoginCredentials): Promise<AuthResponse> {
-    const response = await api.post<ApiResponse<AuthResponse>>(
+    const response = await api.post<AuthResponse>(
       "/api/users/login",
       credentials
     );
-    return response.data.data;
+    return response.data;
   },
 
   async register(userData: RegisterData): Promise<AuthResponse> {
-    const response = await api.post<ApiResponse<AuthResponse>>(
+    const response = await api.post<AuthResponse>(
       "/api/users/register",
       userData
     );
-    return response.data.data;
+    return response.data;
   },
 
   async getCurrentUser(): Promise<User> {
-    const response = await api.get<ApiResponse<User>>("/api/users/profile");
-    return response.data.data;
+    const response = await api.get<User>("/api/users/profile");
+    return response.data;
   },
 
   async logout(): Promise<void> {

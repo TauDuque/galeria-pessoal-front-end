@@ -16,10 +16,16 @@ export const loginUser = createAsyncThunk(
   async (credentials: LoginCredentials, { rejectWithValue }) => {
     try {
       const response = await authService.login(credentials);
-      localStorage.setItem("token", response.token);
-      return response;
+
+      // Verificar se a resposta tem a estrutura esperada
+      if (response && response.token && response.user) {
+        localStorage.setItem("token", response.token);
+        return response;
+      } else {
+        return rejectWithValue("Resposta inválida da API");
+      }
     } catch (error: any) {
-      return rejectWithValue(error.message);
+      return rejectWithValue(error.message || "Erro no login");
     }
   }
 );
@@ -29,10 +35,15 @@ export const registerUser = createAsyncThunk(
   async (userData: RegisterData, { rejectWithValue }) => {
     try {
       const response = await authService.register(userData);
-      localStorage.setItem("token", response.token);
-      return response;
+      // Verificar se a resposta tem a estrutura esperada
+      if (response && response.token && response.user) {
+        localStorage.setItem("token", response.token);
+        return response;
+      } else {
+        return rejectWithValue("Resposta inválida da API");
+      }
     } catch (error: any) {
-      return rejectWithValue(error.message);
+      return rejectWithValue(error.message || "Erro no registro");
     }
   }
 );
@@ -73,10 +84,20 @@ const authSlice = createSlice({
       })
       .addCase(loginUser.fulfilled, (state, action) => {
         state.isLoading = false;
-        state.user = action.payload.user;
-        state.token = action.payload.token;
-        state.isAuthenticated = true;
-        state.error = null;
+        console.log("🔍 Login Fulfilled Payload:", action.payload); // Debug log
+
+        // Verificar se payload existe e tem a estrutura correta
+        if (action.payload && action.payload.user && action.payload.token) {
+          console.log("✅ Atualizando estado com:", action.payload); // Debug log
+          state.user = action.payload.user;
+          state.token = action.payload.token;
+          state.isAuthenticated = true;
+          state.error = null;
+        } else {
+          console.error("❌ Payload inválido:", action.payload); // Debug log
+          state.error = "Resposta inválida da API";
+          state.isAuthenticated = false;
+        }
       })
       .addCase(loginUser.rejected, (state, action) => {
         state.isLoading = false;
@@ -89,10 +110,16 @@ const authSlice = createSlice({
       })
       .addCase(registerUser.fulfilled, (state, action) => {
         state.isLoading = false;
-        state.user = action.payload.user;
-        state.token = action.payload.token;
-        state.isAuthenticated = true;
-        state.error = null;
+        // Verificar se payload existe e tem a estrutura correta
+        if (action.payload && action.payload.user && action.payload.token) {
+          state.user = action.payload.user;
+          state.token = action.payload.token;
+          state.isAuthenticated = true;
+          state.error = null;
+        } else {
+          state.error = "Resposta inválida da API";
+          state.isAuthenticated = false;
+        }
       })
       .addCase(registerUser.rejected, (state, action) => {
         state.isLoading = false;
