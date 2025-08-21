@@ -1,35 +1,27 @@
 import React from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useAppSelector } from "../store";
 import {
   ArrowRightIcon,
   PhotoIcon,
   UserGroupIcon,
   SparklesIcon,
+  HeartIcon,
+  LightBulbIcon,
+  ComputerDesktopIcon,
 } from "@heroicons/react/24/outline";
 
 const Home: React.FC = () => {
   const { isAuthenticated } = useAppSelector((state) => state.auth);
+  const navigate = useNavigate();
 
-  const features = [
-    {
-      icon: PhotoIcon,
-      title: "Compartilhe sua Arte",
-      description: "Faça upload das suas criações e compartilhe com o mundo.",
-    },
-    {
-      icon: UserGroupIcon,
-      title: "Comunidade Criativa",
-      description:
-        "Conecte-se com outros artistas e descubra novas inspirações.",
-    },
-    {
-      icon: SparklesIcon,
-      title: "Galeria Moderna",
-      description:
-        "Interface elegante e moderna para exibir suas obras de arte.",
-    },
-  ];
+  const handleGetStarted = () => {
+    if (isAuthenticated) {
+      navigate("/gallery");
+    } else {
+      navigate("/register");
+    }
+  };
 
   return (
     <div className="relative">
@@ -39,22 +31,18 @@ const Home: React.FC = () => {
 
         <div className="container-main relative">
           <div className="text-center max-w-4xl mx-auto">
-            <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold mb-6">
-              Sua <span className="text-gradient">Arte</span> merece
-              <br />
-              ser <span className="text-gradient">vista</span>
+            <h1 className="text-5xl md:text-7xl font-bold mb-6">
+              A arte que <span className="text-gradient">merece ser vista</span>
             </h1>
-
-            <p className="text-xl md:text-2xl text-muted-foreground mb-8 max-w-2xl mx-auto">
-              Crie, compartilhe e descubra arte incrível em nossa galeria
-              moderna e intuitiva.
+            <p className="text-xl md:text-2xl text-muted-foreground max-w-3xl mx-auto mb-8">
+              Descubra artes incríveis em nossa galeria moderna e intuitiva
             </p>
 
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               {isAuthenticated ? (
                 <>
-                  <Link to="/upload" className="btn-primary text-lg px-8 py-4">
-                    Fazer Upload
+                  <Link to="/gallery" className="btn-primary text-lg px-8 py-4">
+                    Explorar Galeria
                     <ArrowRightIcon className="w-5 h-5 ml-2" />
                   </Link>
                   <Link
@@ -66,13 +54,12 @@ const Home: React.FC = () => {
                 </>
               ) : (
                 <>
-                  <Link
-                    to="/register"
+                  <button
+                    onClick={handleGetStarted}
                     className="btn-primary text-lg px-8 py-4"
                   >
-                    Começar Agora
-                    <ArrowRightIcon className="w-5 h-5 ml-2" />
-                  </Link>
+                    Começar
+                  </button>
                   <Link
                     to="/gallery"
                     className="btn-secondary text-lg px-8 py-4"
@@ -100,19 +87,44 @@ const Home: React.FC = () => {
             </p>
           </div>
 
-          <div className="grid md:grid-cols-3 gap-8">
-            {features.map((feature, index) => (
-              <div
-                key={index}
-                className="card-gradient p-8 text-center group hover:scale-105 transition-transform duration-300"
-              >
-                <div className="w-16 h-16 bg-gradient-primary rounded-full flex items-center justify-center mx-auto mb-6 group-hover:shadow-glow transition-shadow duration-300">
-                  <feature.icon className="w-8 h-8 text-white" />
-                </div>
-                <h3 className="text-xl font-semibold mb-4">{feature.title}</h3>
-                <p className="text-muted-foreground">{feature.description}</p>
+          {/* Feature Cards */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-16">
+            <div className="card p-8 text-center hover:shadow-lg transition-shadow duration-300">
+              <div className="w-16 h-16 bg-primary-500/20 rounded-full flex items-center justify-center mx-auto mb-6">
+                <HeartIcon className="w-8 h-8 text-primary-500" />
               </div>
-            ))}
+              <h3 className="text-xl font-semibold mb-4">
+                Compartilhe suas artes favoritas
+              </h3>
+              <p className="text-muted-foreground">
+                Construa sua coleção pessoal e compartilhe suas obras de arte
+                preferidas com amigos e familiares.
+              </p>
+            </div>
+
+            <div className="card p-8 text-center hover:shadow-lg transition-shadow duration-300">
+              <div className="w-16 h-16 bg-secondary-500/20 rounded-full flex items-center justify-center mx-auto mb-6">
+                <LightBulbIcon className="w-8 h-8 text-secondary-500" />
+              </div>
+              <h3 className="text-xl font-semibold mb-4">
+                Inspiração Criativa
+              </h3>
+              <p className="text-muted-foreground">
+                Conecte-se com grandes artistas e descubra novas inspirações
+                para expandir seu horizonte artístico.
+              </p>
+            </div>
+
+            <div className="card p-8 text-center hover:shadow-lg transition-shadow duration-300">
+              <div className="w-16 h-16 bg-accent-500/20 rounded-full flex items-center justify-center mx-auto mb-6">
+                <ComputerDesktopIcon className="w-8 h-8 text-accent-500" />
+              </div>
+              <h3 className="text-xl font-semibold mb-4">Interface Moderna</h3>
+              <p className="text-muted-foreground">
+                Interface elegante e moderna para exibir as maiores obras de
+                arte com navegação intuitiva.
+              </p>
+            </div>
           </div>
         </div>
       </section>

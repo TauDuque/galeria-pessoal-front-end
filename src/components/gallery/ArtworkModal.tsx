@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useAppSelector, useAppDispatch } from "../../store";
-import { deleteArtwork } from "../../store/slices/artworkSlice";
+
 import { addNotification } from "../../store/slices/uiSlice";
 import { artworkService } from "../../services/artworkService";
 import { Artwork } from "../../types";
@@ -8,7 +8,6 @@ import {
   XMarkIcon,
   UserIcon,
   CalendarIcon,
-  TrashIcon,
   ShareIcon,
   HeartIcon,
 } from "@heroicons/react/24/outline";
@@ -22,7 +21,7 @@ interface ArtworkModalProps {
 const ArtworkModal: React.FC<ArtworkModalProps> = ({ artworkId, onClose }) => {
   const [artwork, setArtwork] = useState<Artwork | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const [isDeleting, setIsDeleting] = useState(false);
+
   const [imageLoaded, setImageLoaded] = useState(false);
 
   const dispatch = useAppDispatch();
@@ -49,42 +48,12 @@ const ArtworkModal: React.FC<ArtworkModalProps> = ({ artworkId, onClose }) => {
     fetchArtwork();
   }, [artworkId, dispatch, onClose]);
 
-  const handleDelete = async () => {
-    if (
-      !artwork ||
-      !window.confirm("Tem certeza que deseja excluir esta obra?")
-    ) {
-      return;
-    }
-
-    setIsDeleting(true);
-    try {
-      await dispatch(deleteArtwork(String(artwork.id))).unwrap();
-      dispatch(
-        addNotification({
-          type: "success",
-          message: "Obra excluída com sucesso!",
-        })
-      );
-      onClose();
-    } catch (error) {
-      dispatch(
-        addNotification({
-          type: "error",
-          message: "Erro ao excluir obra",
-        })
-      );
-    } finally {
-      setIsDeleting(false);
-    }
-  };
-
   const handleShare = async () => {
     if (navigator.share) {
       try {
         await navigator.share({
           title: artwork?.title,
-          text: artwork?.description,
+          text: artwork?.title,
           url: window.location.href,
         });
       } catch (error) {
@@ -112,7 +81,8 @@ const ArtworkModal: React.FC<ArtworkModalProps> = ({ artworkId, onClose }) => {
     });
   };
 
-  const isOwner = user && artwork && String(user.id) === String(artwork.userId);
+  // TODO: Implementar verificação de proprietário quando conectar com backend
+  const isOwner = false;
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
@@ -153,8 +123,8 @@ const ArtworkModal: React.FC<ArtworkModalProps> = ({ artworkId, onClose }) => {
               {/* Header */}
               <div className="mb-6">
                 <h2 className="text-2xl font-bold mb-2">{artwork.title}</h2>
-                {artwork.description && (
-                  <p className="text-muted-foreground">{artwork.description}</p>
+                {artwork.artist && (
+                  <p className="text-muted-foreground">por {artwork.artist}</p>
                 )}
               </div>
 
@@ -165,11 +135,11 @@ const ArtworkModal: React.FC<ArtworkModalProps> = ({ artworkId, onClose }) => {
                 </div>
                 <div>
                   <p className="font-medium">
-                    {artwork.user?.name || "Artista"}
+                    {artwork.artist || "Artista Desconhecido"}
                   </p>
                   <p className="text-sm text-muted-foreground flex items-center space-x-1">
                     <CalendarIcon className="w-4 h-4" />
-                    <span>Publicado em {formatDate(artwork.createdAt)}</span>
+                    <span>{artwork.date || "Data desconhecida"}</span>
                   </p>
                 </div>
               </div>
@@ -190,21 +160,6 @@ const ArtworkModal: React.FC<ArtworkModalProps> = ({ artworkId, onClose }) => {
                     <span>Curtir</span>
                   </button>
                 </div>
-
-                {isOwner && (
-                  <button
-                    onClick={handleDelete}
-                    disabled={isDeleting}
-                    className="btn-ghost text-red-500 hover:text-red-400 hover:bg-red-500/10 flex items-center space-x-2"
-                  >
-                    {isDeleting ? (
-                      <LoadingSpinner size="sm" />
-                    ) : (
-                      <TrashIcon className="w-4 h-4" />
-                    )}
-                    <span>Excluir</span>
-                  </button>
-                )}
               </div>
             </div>
           </div>

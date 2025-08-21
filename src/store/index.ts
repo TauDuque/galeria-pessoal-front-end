@@ -2,12 +2,16 @@ import { configureStore } from "@reduxjs/toolkit";
 import { TypedUseSelectorHook, useDispatch, useSelector } from "react-redux";
 import authSlice from "./slices/authSlice";
 import artworkSlice from "./slices/artworkSlice";
+import favoritesSlice from "./slices/favoritesSlice";
+import searchSlice from "./slices/searchSlice";
 import uiSlice from "./slices/uiSlice";
 
 export const store = configureStore({
   reducer: {
     auth: authSlice,
     artworks: artworkSlice,
+    favorites: favoritesSlice,
+    search: searchSlice,
     ui: uiSlice,
   },
   middleware: (getDefaultMiddleware) =>

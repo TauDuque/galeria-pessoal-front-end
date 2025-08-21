@@ -1,55 +1,44 @@
-import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
-import { ArtworkState, Artwork, UploadArtworkData } from "../../types";
+import { createSlice, createAsyncThunk, PayloadAction } from "@reduxjs/toolkit";
 import { artworkService } from "../../services/artworkService";
+import { MetMuseumArtwork, SearchFilters } from "../../types";
+
+interface ArtworkSearchResponse {
+  artworks: MetMuseumArtwork[];
+  total: number;
+  page: number;
+  hasMore: boolean;
+}
+
+interface ArtworkState {
+  artworks: MetMuseumArtwork[];
+  total: number;
+  page: number;
+  hasMore: boolean;
+  status: "idle" | "loading" | "succeeded" | "failed";
+  error: string | null;
+}
 
 const initialState: ArtworkState = {
   artworks: [],
-  currentArtwork: null,
-  isLoading: false,
-  error: null,
-  hasMore: true,
+  total: 0,
   page: 1,
+  hasMore: true,
+  status: "idle",
+  error: null,
 };
 
-// Async Thunks
-export const fetchArtworks = createAsyncThunk(
-  "artworks/fetchArtworks",
-  async (
-    { page = 1, limit = 12 }: { page?: number; limit?: number },
-    { rejectWithValue }
-  ) => {
-    try {
-      const response = await artworkService.getArtworks(page, limit);
-      return response;
-    } catch (error: any) {
-      return rejectWithValue(error.message);
-    }
-  }
-);
-
-export const uploadArtwork = createAsyncThunk(
-  "artworks/uploadArtwork",
-  async (artworkData: UploadArtworkData, { rejectWithValue }) => {
-    try {
-      const response = await artworkService.uploadArtwork(artworkData);
-      return response;
-    } catch (error: any) {
-      return rejectWithValue(error.message);
-    }
-  }
-);
-
-export const deleteArtwork = createAsyncThunk(
-  "artworks/deleteArtwork",
-  async (id: string, { rejectWithValue }) => {
-    try {
-      await artworkService.deleteArtwork(id);
-      return id;
-    } catch (error: any) {
-      return rejectWithValue(error.message);
-    }
-  }
-);
+// Async Thunk para buscar obras de arte
+export const fetchArtworks = createAsyncThunk<
+  ArtworkSearchResponse, // Tipo do valor de retorno em caso de sucesso
+  { filters?: SearchFilters; page?: number; limit?: number } // Tipo do argumento que passamos
+>("artworks/fetchArtworks", async (params) => {
+  const response = await artworkService.searchArtworks(
+    params.filters || {},
+    params.page || 1,
+    params.limit || 12
+  );
+  return response;
+});
 
 const artworkSlice = createSlice({
   name: "artworks",
@@ -58,61 +47,48 @@ const artworkSlice = createSlice({
     clearError: (state) => {
       state.error = null;
     },
-    setCurrentArtwork: (state, action) => {
-      state.currentArtwork = action.payload;
-    },
     resetArtworks: (state) => {
       state.artworks = [];
+      state.page = 1;
+      state.hasMore = true;
+      state.status = "idle";
+    },
+    updateFilters: (state, action: PayloadAction<Partial<SearchFilters>>) => {
+      // Reset para primeira página quando filtros mudam
       state.page = 1;
       state.hasMore = true;
     },
   },
   extraReducers: (builder) => {
     builder
-      // Fetch Artworks
       .addCase(fetchArtworks.pending, (state) => {
-        state.isLoading = true;
+        state.status = "loading";
         state.error = null;
       })
-      .addCase(fetchArtworks.fulfilled, (state, action) => {
-        state.isLoading = false;
-        const { artworks, page, hasMore } = action.payload;
+      .addCase(
+        fetchArtworks.fulfilled,
+        (state, action: PayloadAction<ArtworkSearchResponse>) => {
+          state.status = "succeeded";
+          const { artworks, page, hasMore, total } = action.payload;
 
-        if (page === 1) {
-          state.artworks = artworks;
-        } else {
-          state.artworks = [...state.artworks, ...artworks];
+          if (page === 1) {
+            state.artworks = artworks;
+          } else {
+            state.artworks = [...state.artworks, ...artworks];
+          }
+
+          state.page = page;
+          state.hasMore = hasMore;
+          state.total = total;
         }
-
-        state.page = page;
-        state.hasMore = hasMore;
-      })
+      )
       .addCase(fetchArtworks.rejected, (state, action) => {
-        state.isLoading = false;
-        state.error = action.payload as string;
-      })
-      // Upload Artwork
-      .addCase(uploadArtwork.pending, (state) => {
-        state.isLoading = true;
-        state.error = null;
-      })
-      .addCase(uploadArtwork.fulfilled, (state, action) => {
-        state.isLoading = false;
-        state.artworks = [action.payload, ...state.artworks];
-      })
-      .addCase(uploadArtwork.rejected, (state, action) => {
-        state.isLoading = false;
-        state.error = action.payload as string;
-      })
-      // Delete Artwork
-      .addCase(deleteArtwork.fulfilled, (state, action) => {
-        state.artworks = state.artworks.filter(
-          (artwork) => String(artwork.id) !== action.payload
-        );
+        state.status = "failed";
+        state.error = action.error.message || "Falha ao buscar obras de arte";
       });
   },
 });
 
-export const { clearError, setCurrentArtwork, resetArtworks } =
+export const { clearError, resetArtworks, updateFilters } =
   artworkSlice.actions;
 export default artworkSlice.reducer;

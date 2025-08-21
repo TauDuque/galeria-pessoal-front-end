@@ -12,19 +12,9 @@ export const ROUTES = {
   REGISTER: "/register",
   GALLERY: "/gallery",
   PROFILE: "/profile",
-  UPLOAD: "/upload",
 } as const;
 
 export const NOTIFICATION_DURATION = 3000;
-
-export const FILE_UPLOAD = {
-  MAX_SIZE: parseInt(process.env.REACT_APP_MAX_FILE_SIZE || "5242880"), // 5MB
-  ACCEPTED_TYPES: (
-    process.env.REACT_APP_ALLOWED_FILE_TYPES ||
-    "image/jpeg,image/png,image/webp"
-  ).split(","),
-  ACCEPTED_EXTENSIONS: [".jpg", ".jpeg", ".png", ".webp"],
-} as const;
 
 export const PAGINATION = {
   DEFAULT_LIMIT: 12,

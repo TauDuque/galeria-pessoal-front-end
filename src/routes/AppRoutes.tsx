@@ -9,8 +9,8 @@ import Home from "../pages/Home";
 import Login from "../pages/Login";
 import Register from "../pages/Register";
 import Gallery from "../pages/Gallery";
+import Favorites from "../pages/Favorites"; // Nova página
 import Profile from "../pages/Profile";
-import Upload from "../pages/Upload";
 
 const AppRoutes: React.FC = () => {
   const { isAuthenticated } = useAppSelector((state) => state.auth);
@@ -38,18 +38,18 @@ const AppRoutes: React.FC = () => {
 
         {/* Rotas protegidas */}
         <Route
-          path="profile"
+          path="favorites"
           element={
             <ProtectedRoute>
-              <Profile />
+              <Favorites />
             </ProtectedRoute>
           }
         />
         <Route
-          path="upload"
+          path="profile"
           element={
             <ProtectedRoute>
-              <Upload />
+              <Profile />
             </ProtectedRoute>
           }
         />

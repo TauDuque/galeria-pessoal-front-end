@@ -15,25 +15,10 @@ export interface AuthState {
   error: string | null;
 }
 
-// Artwork Types
-export interface Artwork {
-  id: string | number; // Aceitar tanto string quanto number
-  title: string;
-  description?: string;
-  imageUrl: string;
-  userId: string | number; // Aceitar tanto string quanto number
-  user?: User;
-  createdAt: string;
-  updatedAt: string;
-}
-
-export interface ArtworkState {
-  artworks: Artwork[];
-  currentArtwork: Artwork | null;
-  isLoading: boolean;
-  error: string | null;
-  hasMore: boolean;
-  page: number;
+// Artwork Types (Met Museum)
+export interface Artwork extends MetMuseumArtwork {
+  // Mantém compatibilidade com MetMuseumArtwork
+  // Adiciona campos específicos se necessário
 }
 
 // API Types
@@ -59,11 +44,40 @@ export interface ApiError {
   status: number;
 }
 
-// Upload Types
-export interface UploadArtworkData {
+// Met Museum Types
+export interface MetMuseumArtwork {
+  id: string | number;
   title: string;
-  description?: string;
-  image: File;
+  artist?: string;
+  date?: string;
+  medium?: string;
+  dimensions?: string;
+  culture?: string;
+  period?: string;
+  department?: string;
+  imageUrl?: string;
+  objectURL?: string;
+  isPublicDomain?: boolean;
+}
+
+// Favorite Types
+export interface FavoriteArtwork {
+  id: string;
+  artworkId: string | number;
+  userId: string | number;
+  artwork: MetMuseumArtwork;
+  createdAt: string;
+}
+
+// Search Types
+export interface SearchFilters {
+  query?: string;
+  department?: string;
+  period?: string;
+  culture?: string;
+  medium?: string;
+  isPublicDomain?: boolean;
+  hasImage?: boolean;
 }
 
 // UI Types

@@ -1,60 +1,74 @@
-import React, { useEffect, useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useAppDispatch, useAppSelector } from "../store";
 import { fetchArtworks, resetArtworks } from "../store/slices/artworkSlice";
-import { addNotification } from "../store/slices/uiSlice";
+import { artworkService } from "../services/artworkService";
 import ArtworkGrid from "../components/gallery/ArtworkGrid";
-import ArtworkModal from "../components/gallery/ArtworkModal";
 import LoadingSpinner from "../components/common/LoadingSpinner";
-import { MagnifyingGlassIcon, FunnelIcon } from "@heroicons/react/24/outline";
+import { MagnifyingGlassIcon, SparklesIcon } from "@heroicons/react/24/outline";
 
 const Gallery: React.FC = () => {
   const dispatch = useAppDispatch();
-  const { artworks, isLoading, error, hasMore, page } = useAppSelector(
-    (state) => state.artworks
-  );
-  const [selectedArtwork, setSelectedArtwork] = useState<string | null>(null);
+  const { artworks, status, error } = useAppSelector((state) => state.artworks);
   const [searchTerm, setSearchTerm] = useState("");
-  const [isLoadingMore, setIsLoadingMore] = useState(false);
+  const [hasSearched, setHasSearched] = useState(false);
+  const [classicArtworks, setClassicArtworks] = useState<any[]>([]);
+  const [loadingClassics, setLoadingClassics] = useState(false);
 
+  // Carregar obras clássicas automaticamente quando a página carrega
   useEffect(() => {
-    // Reset e carregar primeira página
-    dispatch(resetArtworks());
-    loadArtworks(1);
+    const loadClassicArtworks = async () => {
+      setLoadingClassics(true);
+      try {
+        const classics = await artworkService.getClassicArtworks();
+        setClassicArtworks(classics);
+      } catch (error) {
+        console.error("Erro ao carregar obras clássicas:", error);
+      } finally {
+        setLoadingClassics(false);
+      }
+    };
+
+    loadClassicArtworks();
   }, []);
 
-  useEffect(() => {
-    if (error) {
+  const handleSearch = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (searchTerm.trim()) {
+      setHasSearched(true);
       dispatch(
-        addNotification({
-          type: "error",
-          message: error,
+        fetchArtworks({
+          filters: { query: searchTerm.trim() },
+          limit: 20,
         })
       );
     }
-  }, [error, dispatch]);
+  };
 
-  const loadArtworks = async (pageNumber: number) => {
+  const handleClearSearch = () => {
+    setSearchTerm("");
+    setHasSearched(false);
+    dispatch(resetArtworks());
+  };
+
+  const handleLoadClassics = async () => {
+    setHasSearched(false);
+    dispatch(resetArtworks());
+    setLoadingClassics(true);
     try {
-      await dispatch(fetchArtworks({ page: pageNumber, limit: 12 })).unwrap();
+      const classics = await artworkService.getClassicArtworks();
+      setClassicArtworks(classics);
     } catch (error) {
-      // Error já é tratado no useEffect
+      console.error("Erro ao carregar obras clássicas:", error);
+    } finally {
+      setLoadingClassics(false);
     }
   };
 
-  const handleLoadMore = async () => {
-    if (hasMore && !isLoading) {
-      setIsLoadingMore(true);
-      await loadArtworks(page + 1);
-      setIsLoadingMore(false);
-    }
-  };
-
-  const filteredArtworks = artworks.filter(
-    (artwork) =>
-      artwork.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      artwork.description?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      artwork.user?.name.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  // Determinar quais obras exibir
+  const displayArtworks = hasSearched ? artworks : classicArtworks;
+  const isLoading = hasSearched ? status === "loading" : loadingClassics;
+  const hasError = hasSearched ? status === "failed" : false;
+  const errorMessage = hasSearched ? error : null;
 
   return (
     <div className="min-h-screen py-8">
@@ -62,121 +76,124 @@ const Gallery: React.FC = () => {
         {/* Header */}
         <div className="text-center mb-12">
           <h1 className="text-4xl md:text-5xl font-bold mb-4">
-            Galeria de <span className="text-gradient">Arte</span>
+            Explore a <span className="text-gradient">Coleção</span>
           </h1>
           <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-            Descubra obras incríveis criadas por nossa comunidade de artistas
-            talentosos.
+            Descubra obras incríveis do Metropolitan Museum of Art
           </p>
         </div>
 
-        {/* Search and Filters */}
-        <div className="mb-8">
-          <div className="flex flex-col md:flex-row gap-4 items-center justify-between">
-            {/* Search */}
-            <div className="relative flex-1 max-w-md">
-              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                <MagnifyingGlassIcon className="h-5 w-5 text-muted-foreground" />
-              </div>
-              <input
-                type="text"
-                placeholder="Buscar por título, descrição ou artista..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="input pl-10 w-full"
-              />
+        {/* Search Form */}
+        <form
+          onSubmit={handleSearch}
+          className="flex flex-col md:flex-row gap-4 justify-center mb-8 max-w-2xl mx-auto"
+        >
+          <div className="relative flex-1">
+            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+              <MagnifyingGlassIcon className="h-5 w-5 text-muted-foreground" />
             </div>
-
-            {/* Stats */}
-            <div className="flex items-center space-x-4 text-sm text-muted-foreground">
-              <span>{filteredArtworks.length} obras encontradas</span>
-              {searchTerm && (
-                <button
-                  onClick={() => setSearchTerm("")}
-                  className="text-primary-500 hover:text-primary-400 transition-colors"
-                >
-                  Limpar busca
-                </button>
-              )}
-            </div>
+            <input
+              type="text"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              placeholder="Busque por artista (ex: Monet, Rembrandt, Van Gogh...)"
+              className="input pl-10 w-full"
+            />
           </div>
+          <button
+            type="submit"
+            className="btn-primary px-8 py-3"
+            disabled={isLoading || !searchTerm.trim()}
+          >
+            {isLoading ? "Buscando..." : "Buscar"}
+          </button>
+        </form>
+
+        {/* Action Buttons */}
+        <div className="flex flex-col sm:flex-row gap-4 justify-center mb-8">
+          {hasSearched && (
+            <button onClick={handleClearSearch} className="btn-secondary">
+              Limpar Busca
+            </button>
+          )}
+          <button
+            onClick={handleLoadClassics}
+            className="btn-secondary flex items-center justify-center space-x-2"
+            disabled={isLoading}
+          >
+            <SparklesIcon className="w-4 h-4" />
+            <span>Ver Obras Clássicas</span>
+          </button>
         </div>
 
-        {/* Loading inicial */}
-        {isLoading && artworks.length === 0 ? (
+        {/* Content */}
+        {isLoading && (
           <div className="flex justify-center items-center py-20">
             <div className="text-center">
               <LoadingSpinner size="lg" className="mx-auto mb-4" />
               <p className="text-muted-foreground">
-                Carregando obras de arte...
+                {hasSearched
+                  ? "Buscando obras de arte..."
+                  : "Carregando obras clássicas..."}
               </p>
             </div>
           </div>
-        ) : (
-          <>
-            {/* Grid de Artworks */}
-            {filteredArtworks.length > 0 ? (
-              <>
-                <ArtworkGrid
-                  artworks={filteredArtworks}
-                  onArtworkClick={setSelectedArtwork}
-                />
-
-                {/* Load More Button */}
-                {hasMore && !searchTerm && (
-                  <div className="text-center mt-12">
-                    <button
-                      onClick={handleLoadMore}
-                      disabled={isLoadingMore}
-                      className="btn-secondary flex items-center space-x-2 mx-auto"
-                    >
-                      {isLoadingMore ? (
-                        <>
-                          <LoadingSpinner size="sm" />
-                          <span>Carregando...</span>
-                        </>
-                      ) : (
-                        <span>Carregar mais obras</span>
-                      )}
-                    </button>
-                  </div>
-                )}
-              </>
-            ) : (
-              /* Empty State */
-              <div className="text-center py-20">
-                <div className="w-24 h-24 bg-muted rounded-full flex items-center justify-center mx-auto mb-6">
-                  <MagnifyingGlassIcon className="w-12 h-12 text-muted-foreground" />
-                </div>
-                <h3 className="text-xl font-semibold mb-2">
-                  {searchTerm
-                    ? "Nenhuma obra encontrada"
-                    : "Nenhuma obra disponível"}
-                </h3>
-                <p className="text-muted-foreground mb-6">
-                  {searchTerm
-                    ? "Tente ajustar sua busca ou limpar os filtros."
-                    : "Seja o primeiro a compartilhar sua arte!"}
-                </p>
-                {searchTerm && (
-                  <button
-                    onClick={() => setSearchTerm("")}
-                    className="btn-secondary"
-                  >
-                    Limpar busca
-                  </button>
-                )}
-              </div>
-            )}
-          </>
         )}
 
-        {/* Modal de Artwork */}
-        {selectedArtwork && (
-          <ArtworkModal
-            artworkId={selectedArtwork}
-            onClose={() => setSelectedArtwork(null)}
-          />
+        {hasError && (
+          <div className="text-center py-20">
+            <div className="w-24 h-24 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-6">
+              <MagnifyingGlassIcon className="w-12 h-12 text-red-500" />
+            </div>
+            <h3 className="text-xl font-semibold mb-2 text-red-600">
+              Erro na busca
+            </h3>
+            <p className="text-muted-foreground mb-6">{errorMessage}</p>
+            <button onClick={handleLoadClassics} className="btn-secondary">
+              Tentar novamente
+            </button>
+          </div>
+        )}
+
+        {!isLoading &&
+          !hasError &&
+          displayArtworks.length === 0 &&
+          hasSearched && (
+            <div className="text-center py-20">
+              <div className="w-24 h-24 bg-muted rounded-full flex items-center justify-center mx-auto mb-6">
+                <MagnifyingGlassIcon className="w-12 h-12 text-muted-foreground" />
+              </div>
+              <h3 className="text-xl font-semibold mb-2">
+                Nenhuma obra encontrada
+              </h3>
+              <p className="text-muted-foreground mb-6">
+                Tente outro termo de busca ou artista.
+              </p>
+              <button onClick={handleLoadClassics} className="btn-secondary">
+                Ver Obras Clássicas
+              </button>
+            </div>
+          )}
+
+        {!isLoading && !hasError && displayArtworks.length > 0 && (
+          <>
+            <div className="text-center mb-8">
+              <p className="text-lg text-muted-foreground">
+                {hasSearched
+                  ? `${displayArtworks.length} obra${
+                      displayArtworks.length !== 1 ? "s" : ""
+                    } encontrada${
+                      displayArtworks.length !== 1 ? "s" : ""
+                    } para "${searchTerm}"`
+                  : `${displayArtworks.length} obra${
+                      displayArtworks.length !== 1 ? "s" : ""
+                    } clássica${
+                      displayArtworks.length !== 1 ? "s" : ""
+                    } do Metropolitan Museum`}
+              </p>
+            </div>
+            <ArtworkGrid artworks={displayArtworks} />
+          </>
         )}
       </div>
     </div>

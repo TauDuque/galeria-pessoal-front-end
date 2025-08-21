@@ -2,13 +2,14 @@ import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAppSelector, useAppDispatch } from "../../store";
 import { logout } from "../../store/slices/authSlice";
+import { addNotification } from "../../store/slices/uiSlice";
 import {
   Bars3Icon,
   XMarkIcon,
   UserCircleIcon,
-  PlusIcon,
   PhotoIcon,
   ArrowRightOnRectangleIcon,
+  HeartIcon,
 } from "@heroicons/react/24/outline";
 
 const Header: React.FC = () => {
@@ -19,9 +20,17 @@ const Header: React.FC = () => {
   const navigate = useNavigate();
 
   const handleLogout = () => {
-    dispatch(logout());
-    navigate("/");
-    setProfileMenuOpen(false);
+    if (window.confirm("Tem certeza que deseja sair?")) {
+      dispatch(logout());
+      dispatch(
+        addNotification({
+          type: "success",
+          message: "Logout realizado com sucesso!",
+        })
+      );
+      navigate("/");
+      setProfileMenuOpen(false);
+    }
   };
 
   const navigation = [
@@ -63,13 +72,12 @@ const Header: React.FC = () => {
             {isAuthenticated ? (
               <>
                 <Link
-                  to="/upload"
+                  to="/favorites"
                   className="btn-secondary flex items-center space-x-2"
                 >
-                  <PlusIcon className="w-4 h-4" />
-                  <span>Upload</span>
+                  <HeartIcon className="w-4 h-4" />
+                  <span>Favoritos</span>
                 </Link>
-
                 <div className="relative">
                   <button
                     onClick={() => setProfileMenuOpen(!profileMenuOpen)}
@@ -78,7 +86,6 @@ const Header: React.FC = () => {
                     <UserCircleIcon className="w-6 h-6" />
                     <span className="font-medium">{user?.name}</span>
                   </button>
-
                   {profileMenuOpen && (
                     <div className="absolute right-0 mt-2 w-48 card animate-slide-up">
                       <div className="py-2">
@@ -142,16 +149,16 @@ const Header: React.FC = () => {
                   {item.name}
                 </Link>
               ))}
-
               <div className="border-t border-border pt-4">
                 {isAuthenticated ? (
                   <div className="space-y-4">
                     <Link
-                      to="/upload"
+                      to="/favorites"
                       className="block btn-secondary text-center"
                       onClick={() => setMobileMenuOpen(false)}
                     >
-                      Upload Arte
+                      <HeartIcon className="w-4 h-4 inline mr-2" />
+                      Favoritos
                     </Link>
                     <Link
                       to="/profile"

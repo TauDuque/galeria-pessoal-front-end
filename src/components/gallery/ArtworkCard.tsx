@@ -1,56 +1,55 @@
-import React, { useState } from "react";
-import { Artwork } from "../../types";
-import { UserIcon, CalendarIcon } from "@heroicons/react/24/outline";
+import React from "react";
+import { MetMuseumArtwork, FavoriteArtwork } from "../../types";
+import FavoriteButton from "./FavoriteButton";
 
 interface ArtworkCardProps {
-  artwork: Artwork;
-  onClick: () => void;
+  artwork: MetMuseumArtwork | FavoriteArtwork;
 }
 
-const ArtworkCard: React.FC<ArtworkCardProps> = ({ artwork, onClick }) => {
-  const [imageLoaded, setImageLoaded] = useState(false);
-  const [imageError, setImageError] = useState(false);
+const ArtworkCard: React.FC<ArtworkCardProps> = ({ artwork }) => {
+  // Normaliza os dados para exibição baseado no tipo
+  let title: string;
+  let artist: string;
+  let imageUrl: string;
+  let date: string;
 
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString("pt-BR", {
-      day: "2-digit",
-      month: "2-digit",
-      year: "numeric",
-    });
-  };
+  if ("artwork" in artwork) {
+    // É um FavoriteArtwork
+    title = artwork.artwork.title;
+    artist = artwork.artwork.artist || "Artista desconhecido";
+    imageUrl =
+      artwork.artwork.imageUrl ||
+      "https://via.placeholder.com/400x300.png?text=Sem+Imagem";
+    date = artwork.artwork.date || "Data desconhecida";
+  } else {
+    // É um MetMuseumArtwork
+    title = artwork.title;
+    artist = artwork.artist || "Artista desconhecido";
+    imageUrl =
+      artwork.imageUrl ||
+      "https://via.placeholder.com/400x300.png?text=Sem+Imagem";
+    date = artwork.date || "Data desconhecida";
+  }
 
   return (
-    <div
-      className="card group cursor-pointer hover:scale-105 transition-all duration-300 hover:shadow-glow"
-      onClick={onClick}
-    >
+    <div className="card group cursor-pointer hover:scale-105 transition-all duration-300 hover:shadow-glow">
       {/* Image Container */}
       <div className="relative aspect-square overflow-hidden bg-muted">
-        {!imageError ? (
-          <>
-            {!imageLoaded && (
-              <div className="absolute inset-0 flex items-center justify-center">
-                <div className="animate-pulse bg-muted-foreground/20 w-full h-full"></div>
-              </div>
-            )}
-            <img
-              src={artwork.imageUrl}
-              alt={artwork.title}
-              className={`w-full h-full object-cover transition-all duration-300 group-hover:scale-110 ${
-                imageLoaded ? "opacity-100" : "opacity-0"
-              }`}
-              onLoad={() => setImageLoaded(true)}
-              onError={() => setImageError(true)}
-            />
-          </>
-        ) : (
-          <div className="absolute inset-0 flex items-center justify-center bg-muted">
-            <div className="text-center text-muted-foreground">
-              <div className="w-12 h-12 bg-muted-foreground/20 rounded-lg mx-auto mb-2"></div>
-              <p className="text-sm">Erro ao carregar imagem</p>
-            </div>
-          </div>
-        )}
+        <img
+          src={imageUrl}
+          alt={title}
+          className="w-full h-full object-cover transition-all duration-300 group-hover:scale-110"
+          onError={(e) => {
+            const target = e.target as HTMLImageElement;
+            target.src =
+              "https://via.placeholder.com/400x300.png?text=Erro+na+Imagem";
+          }}
+        />
+
+        {/* Favorite Button */}
+        <div className="absolute top-2 right-2">
+          <FavoriteButton artworkId={artwork.id} />
+        </div>
 
         {/* Overlay com gradiente */}
         <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
@@ -59,26 +58,22 @@ const ArtworkCard: React.FC<ArtworkCardProps> = ({ artwork, onClick }) => {
       {/* Content */}
       <div className="p-4">
         <h3 className="font-semibold text-lg mb-2 line-clamp-2 group-hover:text-primary-500 transition-colors">
-          {artwork.title}
+          {title}
         </h3>
 
-        {artwork.description && (
+        {artist && (
           <p className="text-muted-foreground text-sm mb-3 line-clamp-2">
-            {artwork.description}
+            por {artist}
           </p>
         )}
 
         {/* Meta Info */}
         <div className="flex items-center justify-between text-xs text-muted-foreground">
           <div className="flex items-center space-x-1">
-            <UserIcon className="w-4 h-4" />
-            <span className="truncate max-w-20">
-              {artwork.user?.name || "Artista"}
-            </span>
+            <span className="truncate max-w-20">{artist || "Artista"}</span>
           </div>
           <div className="flex items-center space-x-1">
-            <CalendarIcon className="w-4 h-4" />
-            <span>{formatDate(artwork.createdAt)}</span>
+            <span>{date}</span>
           </div>
         </div>
       </div>
