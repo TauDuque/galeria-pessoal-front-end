@@ -1,35 +1,43 @@
 import React, { useState, useEffect } from "react";
 import { useAppDispatch, useAppSelector } from "../store";
 import { fetchArtworks, resetArtworks } from "../store/slices/artworkSlice";
+import { fetchFavorites } from "../store/slices/favoritesSlice";
 import { artworkService } from "../services/artworkService";
 import ArtworkGrid from "../components/gallery/ArtworkGrid";
 import LoadingSpinner from "../components/common/LoadingSpinner";
 import { MagnifyingGlassIcon, SparklesIcon } from "@heroicons/react/24/outline";
+import { useAuthSync } from "../hooks/useAuthSync";
 
 const Gallery: React.FC = () => {
   const dispatch = useAppDispatch();
   const { artworks, status, error } = useAppSelector((state) => state.artworks);
+  const { isAuthenticated } = useAuthSync(); // Usar hook de sincronização
   const [searchTerm, setSearchTerm] = useState("");
   const [hasSearched, setHasSearched] = useState(false);
   const [classicArtworks, setClassicArtworks] = useState<any[]>([]);
   const [loadingClassics, setLoadingClassics] = useState(false);
 
-  // Carregar obras clássicas automaticamente quando a página carrega
+  // Carregar obras clássicas e favoritos automaticamente quando a página carrega
   useEffect(() => {
-    const loadClassicArtworks = async () => {
+    const loadInitialData = async () => {
       setLoadingClassics(true);
       try {
         const classics = await artworkService.getClassicArtworks();
         setClassicArtworks(classics);
+
+        // Carregar favoritos se o usuário estiver autenticado
+        if (isAuthenticated) {
+          dispatch(fetchFavorites());
+        }
       } catch (error) {
-        console.error("Erro ao carregar obras clássicas:", error);
+        console.error("Erro ao carregar dados iniciais:", error);
       } finally {
         setLoadingClassics(false);
       }
     };
 
-    loadClassicArtworks();
-  }, []);
+    loadInitialData();
+  }, [dispatch, isAuthenticated]);
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();

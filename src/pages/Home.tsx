@@ -3,9 +3,6 @@ import { Link, useNavigate } from "react-router-dom";
 import { useAppSelector } from "../store";
 import {
   ArrowRightIcon,
-  PhotoIcon,
-  UserGroupIcon,
-  SparklesIcon,
   HeartIcon,
   LightBulbIcon,
   ComputerDesktopIcon,
@@ -40,18 +37,10 @@ const Home: React.FC = () => {
 
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               {isAuthenticated ? (
-                <>
-                  <Link to="/gallery" className="btn-primary text-lg px-8 py-4">
-                    Explorar Galeria
-                    <ArrowRightIcon className="w-5 h-5 ml-2" />
-                  </Link>
-                  <Link
-                    to="/gallery"
-                    className="btn-secondary text-lg px-8 py-4"
-                  >
-                    Ver Galeria
-                  </Link>
-                </>
+                <Link to="/gallery" className="btn-primary text-lg px-8 py-4">
+                  Explorar Galeria
+                  <ArrowRightIcon className="w-[7.25rem] h-5 ml-2" />
+                </Link>
               ) : (
                 <>
                   <button

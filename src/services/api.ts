@@ -1,8 +1,7 @@
 import axios, { AxiosResponse } from "axios";
 import { ApiResponse } from "../types";
 
-const API_BASE_URL =
-  process.env.REACT_APP_API_URL || "https://sua-url-railway.up.railway.app";
+const API_BASE_URL = process.env.REACT_APP_API_URL || "http://localhost:3001";
 
 const api = axios.create({
   baseURL: API_BASE_URL,

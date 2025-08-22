@@ -17,11 +17,21 @@ const FavoriteButton: React.FC<FavoriteButtonProps> = ({ artworkId }) => {
   const { isAuthenticated } = useAppSelector((state) => state.auth);
   const { items: favoriteItems } = useAppSelector((state) => state.favorites);
 
-  const isFavorite = favoriteItems.some((item) => item.artworkId === artworkId);
+  // Converter para número para comparação consistente
+  const numericArtworkId =
+    typeof artworkId === "string" ? parseInt(artworkId, 10) : artworkId;
+
+  const isFavorite = favoriteItems.some((item) => {
+    const itemArtworkId =
+      typeof item.artworkId === "string"
+        ? parseInt(item.artworkId, 10)
+        : item.artworkId;
+    return itemArtworkId === numericArtworkId;
+  });
 
   const handleToggleFavorite = (e: React.MouseEvent) => {
     e.preventDefault(); // Impede que o clique no botão propague para o card
-    e.stopPropagation();
+    e.stopPropagation(); // Para a propagação do evento
 
     if (!isAuthenticated) {
       dispatch(
@@ -34,7 +44,7 @@ const FavoriteButton: React.FC<FavoriteButtonProps> = ({ artworkId }) => {
     }
 
     if (isFavorite) {
-      dispatch(removeFromFavorites({ artworkId }))
+      dispatch(removeFromFavorites({ artworkId: numericArtworkId }))
         .unwrap()
         .then(() => {
           dispatch(
@@ -45,6 +55,7 @@ const FavoriteButton: React.FC<FavoriteButtonProps> = ({ artworkId }) => {
           );
         })
         .catch((err) => {
+          console.error("Erro ao remover dos favoritos:", err);
           dispatch(
             addNotification({
               type: "error",
@@ -53,7 +64,7 @@ const FavoriteButton: React.FC<FavoriteButtonProps> = ({ artworkId }) => {
           );
         });
     } else {
-      dispatch(addToFavorites({ artworkId }))
+      dispatch(addToFavorites({ artworkId: numericArtworkId }))
         .unwrap()
         .then(() => {
           dispatch(
@@ -64,6 +75,7 @@ const FavoriteButton: React.FC<FavoriteButtonProps> = ({ artworkId }) => {
           );
         })
         .catch((err) => {
+          console.error("Erro ao adicionar aos favoritos:", err);
           dispatch(
             addNotification({
               type: "error",
@@ -77,7 +89,7 @@ const FavoriteButton: React.FC<FavoriteButtonProps> = ({ artworkId }) => {
   return (
     <button
       onClick={handleToggleFavorite}
-      className="p-2 bg-white/80 hover:bg-white rounded-full text-red-500 hover:text-red-600 transition-all duration-200 shadow-sm hover:shadow-md"
+      className="p-2 bg-white/80 hover:bg-white rounded-full text-red-500 hover:text-red-600 transition-all duration-200 shadow-sm hover:shadow-md z-10 relative"
       aria-label={
         isFavorite ? "Remover dos favoritos" : "Adicionar aos favoritos"
       }

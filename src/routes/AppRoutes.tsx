@@ -11,6 +11,7 @@ import Register from "../pages/Register";
 import Gallery from "../pages/Gallery";
 import Favorites from "../pages/Favorites"; // Nova página
 import Profile from "../pages/Profile";
+import ArtworkDetails from "../pages/ArtworkDetails";
 
 const AppRoutes: React.FC = () => {
   const { isAuthenticated } = useAppSelector((state) => state.auth);
@@ -21,6 +22,7 @@ const AppRoutes: React.FC = () => {
       <Route path="/" element={<Layout />}>
         <Route index element={<Home />} />
         <Route path="gallery" element={<Gallery />} />
+        <Route path="artwork/:id" element={<ArtworkDetails />} />
 
         {/* Rotas de autenticação - redireciona se já logado */}
         <Route

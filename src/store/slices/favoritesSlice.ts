@@ -33,7 +33,8 @@ export const addToFavorites = createAsyncThunk<
   FavoriteArtwork,
   { artworkId: string | number }
 >("favorites/addToFavorites", async ({ artworkId }) => {
-  return await favoritesService.addToFavorites(artworkId);
+  const result = await favoritesService.addToFavorites(artworkId);
+  return result;
 });
 
 export const removeFromFavorites = createAsyncThunk<
@@ -88,9 +89,20 @@ const favoritesSlice = createSlice({
       .addCase(
         removeFromFavorites.fulfilled,
         (state, action: PayloadAction<string | number>) => {
-          state.items = state.items.filter(
-            (item) => item.artworkId !== action.payload
-          );
+          // Converter para número para comparação consistente
+          const targetArtworkId =
+            typeof action.payload === "string"
+              ? parseInt(action.payload, 10)
+              : action.payload;
+
+          state.items = state.items.filter((item) => {
+            const itemArtworkId =
+              typeof item.artworkId === "string"
+                ? parseInt(item.artworkId, 10)
+                : item.artworkId;
+            return itemArtworkId !== targetArtworkId;
+          });
+
           state.total = Math.max(0, state.total - 1);
         }
       );

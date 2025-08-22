@@ -1,7 +1,6 @@
 import api from "./api";
 import { MetMuseumArtwork, SearchFilters } from "../types";
 import { fallbackService, shouldUseFallback } from "./fallbackService";
-import { checkBackendHealth } from "../config/environment";
 
 interface ArtworksResponse {
   artworks: MetMuseumArtwork[];
@@ -19,13 +18,6 @@ export const artworkService = {
     try {
       // Verificar se deve usar fallback
       if (shouldUseFallback()) {
-        return fallbackService.getArtworks(page, limit, filters);
-      }
-
-      // Verificar se o back-end está disponível
-      const isBackendAvailable = await checkBackendHealth();
-      if (!isBackendAvailable) {
-        console.warn("Back-end não disponível, usando fallback");
         return fallbackService.getArtworks(page, limit, filters);
       }
 
@@ -52,13 +44,6 @@ export const artworkService = {
     try {
       // Verificar se deve usar fallback
       if (shouldUseFallback()) {
-        return fallbackService.getArtworkById(id);
-      }
-
-      // Verificar se o back-end está disponível
-      const isBackendAvailable = await checkBackendHealth();
-      if (!isBackendAvailable) {
-        console.warn("Back-end não disponível, usando fallback");
         return fallbackService.getArtworkById(id);
       }
 
@@ -95,16 +80,9 @@ export const artworkService = {
         return fallbackService.searchArtworks(filters, page, limit);
       }
 
-      // Verificar se o back-end está disponível
-      const isBackendAvailable = await checkBackendHealth();
-      if (!isBackendAvailable) {
-        console.warn("Back-end não disponível, usando fallback");
-        return fallbackService.searchArtworks(filters, page, limit);
-      }
-
-      const response = await api.post<ArtworksResponse>(
-        `/api/artworks/search`,
-        { filters, page, limit }
+      // Ir direto para o back-end sem verificação de saúde
+      const response = await api.get<ArtworksResponse>(
+        `/api/artworks/search?artist=${filters.query}&limit=${limit}`
       );
       return response.data;
     } catch (error) {
@@ -128,13 +106,7 @@ export const artworkService = {
         return fallbackService.getClassicArtworks();
       }
 
-      // Verificar se o back-end está disponível
-      const isBackendAvailable = await checkBackendHealth();
-      if (!isBackendAvailable) {
-        console.warn("Back-end não disponível, usando fallback");
-        return fallbackService.getClassicArtworks();
-      }
-
+      // Ir direto para o back-end sem verificação de saúde
       const response = await api.get<MetMuseumArtwork[]>(
         "/api/artworks/classics"
       );
